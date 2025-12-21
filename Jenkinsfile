@@ -1,54 +1,18 @@
 pipeline {
-    agent any
+    agent none
 
     tools {
-        maven 'M2_HOME'  // nom de ton installation Maven sur Jenkins
-        jdk 'JAVA_HOME'   // nom de ton JDK sur Jenkins
-    }
-
-    environment {
-        SONAR_TOKEN = credentials('sonar') // token SonarQube
+        maven 'M2_HOME'   // Nom du Maven configuré dans Jenkins
+        jdk 'JAVA_HOME'    // Nom du JDK configuré dans Jenkins
     }
 
     stages {
-
-        stage('Checkout Git') {
+        stage('Build & SonarQube Scanner') {
+            agent any
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/Tasnim70/MonProjetMaven.git'
-            }
-        }
-
-        stage('Clean') {
-            steps {
-                sh 'mvn clean'
-            }
-        }
-
-        stage('Build & Test') {
-            steps {
-                // Utilisation du profil "test" pour H2
-                sh 'mvn verify -Dspring.profiles.active=test'
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('cube') {
-                    sh 'mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN} -Dspring.profiles.active=test'
+                withSonarQubeEnv('q1') { // Nom de ton serveur SonarQube
+                    sh 'mvn clean package sonar:sonar -Dspring.profiles.active=test'
                 }
-            }
-        }
-
-        stage('Package JAR') {
-            steps {
-                sh 'mvn package -DskipTests -Dspring.profiles.active=test'
-            }
-        }
-
-        stage('Archive Artifact') {
-            steps {
-                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
             }
         }
     }
@@ -59,10 +23,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo 'Pipeline CI/CD exécuté avec succès !'
+            echo 'Pipeline terminé avec succès !'
         }
         failure {
-            echo 'Échec du pipeline. Vérifie les logs.'
+            echo 'Échec du pipeline !'
         }
     }
 }
