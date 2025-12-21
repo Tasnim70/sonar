@@ -47,9 +47,7 @@ pipeline {
             echo 'Échec du pipeline !'
         }
         always {
-            node { // <-- obligatoire pour cleanWs()
-                cleanWs()
-            }
+            cleanWs() // <-- pas besoin de node ici dans declarative pipeline
         }
     }
 }
