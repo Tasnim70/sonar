@@ -54,15 +54,14 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            cleanWs()
-        }
-        success {
-            echo 'Pipeline CI réussi !'
-        }
-        failure {
-            echo 'Échec du pipeline '
-        }
+   post {
+    always {
+        deleteDir()
+    }
+    success {
+        echo 'Pipeline CI réussi 🎉'
+    }
+    failure {
+        echo 'Échec du pipeline ❌'
     }
 }
