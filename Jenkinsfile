@@ -1,15 +1,68 @@
-node {
-    stage('Checkout') {
-        checkout scm
+pipeline {
+    agent any
+
+    tools {
+        maven 'M2_HOME'
+        jdk 'JAVA_HOME'
     }
 
-    stage('Build & Sonar') {
-        withSonarQubeEnv('sq1') {
-            sh "mvn clean package sonar:sonar -Dspring.profiles.active=test"
+    environment {
+        SONAR_TOKEN = credentials('sonar')
+        GIT_CREDS   = credentials('github-creds')
+    }
+
+    stages {
+        stage('Checkout Git') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/Tasnim70/MonProjetMaven.git',
+                    credentialsId: 'github-creds'
+            }
+        }
+
+        stage('Clean') {
+            steps {
+                sh 'mvn clean'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sq1') {
+                    sh 'mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}'
+                }
+            }
+        }
+
+        stage('Package (JAR)') {
+            steps {
+                sh 'mvn package -DskipTests'
+            }
+        }
+
+
+        stage('Archive Artifact') {
+            steps {
+                archiveArtifacts artifacts: '*/target/.jar', fingerprint: true
+            }
         }
     }
 
-    stage('Cleanup') {
-        cleanWs()
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo 'Pipeline CI réussi !'
+        }
+        failure {
+            echo 'Échec du pipeline '
+        }
     }
 }
