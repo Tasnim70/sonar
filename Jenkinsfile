@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven'
-        jdk 'JDK17'
+        maven 'M2_HOME'   // doit exister dans Global Tool Configuration
+        jdk 'JAVA_HOME'    // doit exister dans Global Tool Configuration
     }
 
     environment {
@@ -41,7 +41,7 @@ pipeline {
 
     post {
         always {
-            deleteDir() // Remplace cleanWs()
+            deleteDir()
         }
         success {
             echo 'Pipeline CI réussi 🎉'
