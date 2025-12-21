@@ -7,49 +7,49 @@ pipeline {
     }
 
     environment {
-        SONAR_TOKEN = credentials('sonar')
-        GIT_CREDS   = credentials('github-creds')
+        SONAR_TOKEN = credentials('jenkins-sonar')
+        // Pas besoin de GIT_CREDS si repo public
     }
 
     stages {
         stage('Checkout Git') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/Tasnim70/MonProjetMaven.git',
-                    credentialsId: 'github-creds'
+                    url: 'https://github.com/Tasnim70/MonProjetMaven.git'
             }
         }
 
-        stage('Clean') {
+        stage('Build & Test') {
             steps {
-                sh 'mvn clean'
-            }
-        }
-
-        stage('Compile') {
-            steps {
-                sh 'mvn compile'
+                sh "mvn clean verify"
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sq1') {
-                    sh 'mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}'
+                    sh "mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}"
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
 
         stage('Package (JAR)') {
             steps {
-                sh 'mvn package -DskipTests'
+                sh "mvn package -DskipTests"
             }
         }
 
-
         stage('Archive Artifact') {
             steps {
-                archiveArtifacts artifacts: '*/target/.jar', fingerprint: true
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
             }
         }
     }
@@ -62,7 +62,7 @@ pipeline {
             echo 'Pipeline CI réussi !'
         }
         failure {
-            echo 'Échec du pipeline '
+            echo 'Échec du pipeline'
         }
     }
 }
