@@ -2,54 +2,35 @@ pipeline {
     agent any
 
     tools {
-        maven 'M2_HOME'
-        jdk 'JAVA_HOME'
-    }
-
-    environment {
-        SONAR_TOKEN = credentials('jenkins-sonar')
-        GIT_CREDS   = credentials('github-creds')
+        maven 'Maven'
+        jdk 'JDK17'
     }
 
     stages {
-        stage('Checkout Git') {
+        stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/Tasnim70/MonProjetMaven.git',
-                    credentialsId: 'github-creds'
+                    url: 'https://github.com/Tasnim70/MonProjetMaven.git'
             }
         }
 
-        stage('Clean') {
+        stage('Build') {
             steps {
-                sh 'mvn clean'
-            }
-        }
-
-        stage('Compile') {
-            steps {
-                sh 'mvn compile'
+                sh 'mvn clean package'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sq1') {
-                    sh 'mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}'
+                    sh 'mvn sonar:sonar'
                 }
             }
         }
 
-        stage('Package (JAR)') {
-            steps {
-                sh 'mvn package -DskipTests'
-            }
-        }
-
-
         stage('Archive Artifact') {
             steps {
-                archiveArtifacts artifacts: '*/target/.jar', fingerprint: true
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
     }
@@ -59,10 +40,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo 'Pipeline CI réussi !'
+            echo 'Pipeline CI réussi 🎉'
         }
         failure {
-            echo 'Échec du pipeline '
+            echo 'Échec du pipeline ❌'
         }
     }
 }
