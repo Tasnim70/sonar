@@ -6,9 +6,6 @@ pipeline {
                 sh 'java -version'
             }
         }
-    }
-}
-
     
     environment {
         SONAR_TOKEN = credentials('4SAE-project-token')
