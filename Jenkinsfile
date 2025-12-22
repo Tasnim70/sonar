@@ -1,4 +1,5 @@
 pipeline {
+    agent any
     tools {
         maven 'M2_HOME'   // Nom du Maven configuré dans Jenkins
         jdk 'JAVA_HOME'    // Nom du JDK configuré dans Jenkins
