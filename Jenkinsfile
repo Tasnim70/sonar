@@ -1,33 +1,32 @@
 pipeline {
-    agent any
+    agent none
 
-    environment {
-        SONAR_TOKEN = credentials('4SAE-project-token')
+    tools {
+        maven 'M2_HOME'   // Nom du Maven configuré dans Jenkins
+        jdk 'JAVA_HOME'    // Nom du JDK configuré dans Jenkins
     }
 
     stages {
-        stage('Check Java') {
+        stage('Build & SonarQube Scanner') {
+            agent any
             steps {
-                sh 'java -version'
+                withSonarQubeEnv('sq1') { // Nom de ton serveur SonarQube
+                    sh 'mvn clean package sonar:sonar -Dspring.profiles.active=test'
+                }
             }
         }
+    }
 
-        stage('Checkout') {
-            steps {
-                git url: 'https://github.com/Tasnim70/MonProjetMaven.git', branch: 'main'
-            }
+    post {
+        always {
+            echo 'Nettoyage du workspace...'
+            cleanWs()
         }
-
-        stage('Build') {
-            steps {
-                sh 'mvn clean compile'
-            }
+        success {
+            echo 'Pipeline terminé avec succès !'
         }
-
-        stage('SonarQube Analysis') {
-            steps {
-                sh "mvn sonar:sonar -Dsonar.projectKey=4SAE-project -Dsonar.host.url=http://192.168.33.10:9000 -Dsonar.login=$SONAR_TOKEN"
-            }
+        failure {
+            echo 'Échec du pipeline !'
         }
     }
 }
