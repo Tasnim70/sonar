@@ -1,31 +1,69 @@
 pipeline {
     agent any
+
     tools {
-        maven 'M2_HOME'   // Nom du Maven configuré dans Jenkins
-        jdk 'JAVA_HOME'    // Nom du JDK configuré dans Jenkins
+        maven 'M2_HOME'
+        jdk 'JAVA_HOME'
+    }
+
+    environment {
+        SONAR_TOKEN = credentials('jenkins-sonar')
+        GIT_CREDS   = credentials('github-creds')
+        DOCKER_IMAGE = "mydockeruser/tpdevopssaifden:latest"
     }
 
     stages {
-        stage('Build & SonarQube Scanner') {
-            agent any
+        stage('Checkout Git') {
             steps {
-                withSonarQubeEnv('sq1') { // Nom de ton serveur SonarQube
-                    sh 'mvn clean package sonar:sonar -Dspring.profiles.active=test'
+                git branch: 'master',
+                    url: 'https://github.com/denden654/sonar.git',
+                    credentialsId: 'github-creds'
+            }
+        }
+
+        stage('Clean') {
+            steps {
+                sh 'mvn clean'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sqsd') {
+                    sh 'mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}'
                 }
             }
         }
+
+        stage('Package (JAR)') {
+            steps {
+                sh 'mvn package -DskipTests'
+            }
+        }
+
+        stage('Archive Artifact') {
+            steps {
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+            }
+        }
+
     }
 
     post {
         always {
-            echo 'Nettoyage du workspace...'
             cleanWs()
         }
         success {
-            echo 'Pipeline terminé avec succès !'
+            echo 'Pipeline CI réussi !'
         }
         failure {
-            echo 'Échec du pipeline !'
+            echo 'Échec du pipeline'
         }
     }
 }
