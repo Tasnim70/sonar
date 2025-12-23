@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
-                git branch: 'main', url: 'https://github.com/Tasnim70/MonProjetMaven.git'
+                git branch: 'main', url: 'https://github.com/Tasnim70/sonar.git'
             }
         }
 
