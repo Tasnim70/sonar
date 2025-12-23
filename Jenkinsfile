@@ -2,19 +2,18 @@ pipeline {
     agent any
 
     tools {
-        maven 'M2_HOME'   // Nom du Maven configuré dans Jenkins
-        jdk 'JAVA_HOME'    // Nom du JDK configuré dans Jenkins
+        maven 'M2_HOME'
+        jdk 'JAVA_HOME'
     }
 
     environment {
-        SONAR_TOKEN = credentials('jenkins-sonar')  // Ton token SonarQube
+        SONAR_TOKEN = credentials('jenkins-sonar')
     }
 
     stages {
 
         stage('Checkout Git') {
             steps {
-                // Repo public, pas besoin de credentials
                 git branch: 'main',
                     url: 'https://github.com/Tasnim70/MonProjetMaven.git'
             }
@@ -34,7 +33,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sqsd') {  // Nom du serveur SonarQube dans Jenkins
+                withSonarQubeEnv('sqsd') {
                     sh "mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}"
                 }
             }
@@ -55,9 +54,7 @@ pipeline {
 
     post {
         always {
-            node {
-                cleanWs()  // Nettoie le workspace à chaque build
-            }
+            cleanWs()  // directement, sans node {}
         }
         success {
             echo 'Pipeline CI réussi ! 🎉'
