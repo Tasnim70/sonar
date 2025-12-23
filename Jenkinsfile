@@ -33,7 +33,8 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sqsd') {
-                    sh "mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN"
+                    sh 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
+
                 }
             }
         }
