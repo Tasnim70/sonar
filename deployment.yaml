@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tpfoyer-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tpfoyer
+  template:
+    metadata:
+      labels:
+        app: tpfoyer
+    spec:
+      containers:
+      - name: tpfoyer
+        image: tasnimbenkhalifa/tpfoyer:latest
+        ports:
+        - containerPort: 8081
