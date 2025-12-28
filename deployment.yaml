@@ -15,5 +15,6 @@ spec:
       containers:
       - name: tpfoyer
         image: tasnimbenkhalifa/tpfoyer:latest
+        imagePullPolicy: Never   # <- important pour utiliser l'image locale
         ports:
         - containerPort: 8081
